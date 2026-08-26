@@ -1,952 +1,700 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 
 <head>
 
-<meta charset="UTF-8">
+  <meta charset="UTF-8">
 
-<meta
-  name="viewport"
-  content="width=device-width,
-  initial-scale=1,
-  maximum-scale=1">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-<title>
-  Vendas IA + Pix
-</title>
+  <title>Vendas IA + Pix</title>
 
+  <style>
 
-<style>
+    * {
+      box-sizing: border-box;
+    }
 
-* {
-  box-sizing: border-box;
-}
+    body {
 
+      margin: 0;
 
-body {
+      padding: 20px;
 
-  margin: 0;
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
 
-  font-family:
-    Arial,
-    sans-serif;
+      background: #f4f6f8;
 
-  background:
-    #f1f5f9;
+      color: #222;
 
-  color:
-    #0f172a;
+    }
 
-}
+    .container {
 
+      width: 100%;
 
-.container {
+      max-width: 650px;
 
-  max-width:
-    500px;
+      margin: auto;
 
-  margin:
-    auto;
+    }
 
-  padding:
-    15px;
+    .card {
 
-}
+      background: white;
 
+      border-radius: 18px;
 
-.header {
+      padding: 22px;
 
-  background:
-    #0f172a;
+      box-shadow:
+        0 5px 25px
+        rgba(0,0,0,.08);
 
-  color:
-    white;
+    }
 
-  padding:
-    20px;
+    h1 {
 
-  border-radius:
-    20px;
+      text-align: center;
 
-  margin-bottom:
-    15px;
+      margin-top: 0;
 
-}
+      font-size: 25px;
 
+    }
 
-.header h1 {
+    .subtitulo {
 
-  margin:
-    0;
+      text-align: center;
 
-  font-size:
-    23px;
+      color: #666;
 
-}
+      margin-bottom: 25px;
 
+    }
 
-.header p {
+    label {
 
-  margin-top:
-    8px;
+      display: block;
 
-  color:
-    #cbd5e1;
+      font-weight: bold;
 
-}
+      margin-top: 15px;
 
+      margin-bottom: 6px;
 
-.card {
+    }
 
-  background:
-    white;
+    input,
+    textarea {
 
-  padding:
-    18px;
+      width: 100%;
 
-  border-radius:
-    20px;
+      padding: 13px;
 
-  margin-bottom:
-    15px;
+      border: 1px solid #ddd;
 
-  box-shadow:
-    0 5px 20px
-    rgba(0,0,0,.08);
+      border-radius: 10px;
 
-}
+      font-size: 16px;
 
+      outline: none;
 
-.field {
+    }
 
-  margin-bottom:
-    15px;
+    input:focus,
+    textarea:focus {
 
-}
+      border-color: #777;
 
+    }
 
-label {
+    textarea {
 
-  display:
-    block;
+      min-height: 80px;
 
-  font-weight:
-    bold;
+      resize: vertical;
 
-  margin-bottom:
-    6px;
+    }
 
-}
+    .voz-area {
 
+      text-align: center;
 
-input,
-textarea {
+      padding: 15px 0 20px;
 
-  width:
-    100%;
+    }
 
-  padding:
-    13px;
+    #voiceBtn {
 
-  border:
-    1px solid #cbd5e1;
+      width: 90px;
 
-  border-radius:
-    12px;
+      height: 90px;
 
-  font-size:
-    16px;
+      border-radius: 50%;
 
-}
+      border: none;
 
+      background: #111;
 
-textarea {
+      color: white;
 
-  min-height:
-    80px;
+      font-size: 36px;
 
-  resize:
-    vertical;
+      cursor: pointer;
 
-}
+      box-shadow:
+        0 6px 18px
+        rgba(0,0,0,.20);
 
+      transition: .2s;
 
-.voice {
+    }
 
-  text-align:
-    center;
+    #voiceBtn:hover {
 
-}
+      transform: scale(1.04);
 
+    }
 
-.voiceBtn {
+    #voiceBtn.recording {
 
-  width:
-    105px;
+      background: #d62828;
 
-  height:
-    105px;
+      animation:
+        pulsar 1.2s
+        infinite;
 
-  border:
-    none;
+    }
 
-  border-radius:
-    50%;
+    @keyframes pulsar {
 
-  background:
-    #2563eb;
+      0% {
+        box-shadow:
+          0 0 0 0
+          rgba(214,40,40,.6);
+      }
 
-  color:
-    white;
+      70% {
+        box-shadow:
+          0 0 0 22px
+          rgba(214,40,40,0);
+      }
 
-  font-size:
-    40px;
+      100% {
+        box-shadow:
+          0 0 0 0
+          rgba(214,40,40,0);
+      }
 
-  cursor:
-    pointer;
+    }
 
-}
+    #voiceStatus {
 
+      margin-top: 12px;
 
-.voiceBtn.recording {
+      font-weight: bold;
 
-  background:
-    #dc2626;
+      min-height: 24px;
 
-  animation:
-    pulse 1s infinite;
+    }
 
-}
+    .transcricao {
 
+      background: #f0f2f4;
 
-@keyframes pulse {
+      border-radius: 12px;
 
-  50% {
-    transform:
-      scale(1.08);
-  }
+      padding: 14px;
 
-}
+      margin-top: 12px;
 
+      min-height: 50px;
 
-.voiceStatus {
+      color: #333;
 
-  margin-top:
-    12px;
+    }
 
-  color:
-    #64748b;
+    .ajuda {
 
-}
+      margin-top: 10px;
 
+      font-size: 14px;
 
-.transcript {
+      color: #777;
 
-  margin-top:
-    12px;
+      line-height: 1.5;
 
-  padding:
-    12px;
+    }
 
-  min-height:
-    50px;
+    .linha {
 
-  background:
-    #f8fafc;
+      display: grid;
 
-  border-radius:
-    12px;
+      grid-template-columns:
+        1fr 1fr;
 
-}
+      gap: 12px;
 
+    }
 
-.products {
+    button {
 
-  background:
-    #f8fafc;
+      border: none;
 
-  padding:
-    12px;
+      border-radius: 10px;
 
-  border-radius:
-    12px;
+      padding: 14px;
 
-  margin-bottom:
-    15px;
+      font-size: 16px;
 
-}
+      font-weight: bold;
 
+      cursor: pointer;
 
-.product {
+    }
 
-  padding:
-    8px 0;
+    .btnSalvar {
 
-  border-bottom:
-    1px solid #e2e8f0;
+      width: 100%;
 
-}
+      margin-top: 20px;
 
+      background: #16803c;
 
-.total {
+      color: white;
 
-  text-align:
-    center;
+      font-size: 18px;
 
-  background:
-    #ecfdf5;
+    }
 
-  padding:
-    18px;
+    .btnSalvar:disabled {
 
-  border-radius:
-    15px;
+      background: #aaa;
 
-  margin-bottom:
-    15px;
+      cursor: not-allowed;
 
-}
+    }
 
+    .btnLimpar {
 
-.total small {
+      width: 100%;
 
-  color:
-    #047857;
+      margin-top: 10px;
 
-}
+      background: #eee;
 
+      color: #333;
 
-.total strong {
+    }
 
-  display:
-    block;
+    .resultado {
 
-  margin-top:
-    5px;
+      display: none;
 
-  font-size:
-    32px;
+      margin-top: 22px;
 
-  color:
-    #047857;
+      padding: 18px;
 
-}
+      border-radius: 14px;
 
+      background: #eef8f1;
 
-.btn {
+      border: 1px solid #b7dfc2;
 
-  width:
-    100%;
+    }
 
-  padding:
-    15px;
+    .resultado h2 {
 
-  border:
-    0;
+      margin-top: 0;
 
-  border-radius:
-    13px;
+      font-size: 20px;
 
-  font-size:
-    16px;
+    }
 
-  font-weight:
-    bold;
+    .pix {
 
-  margin-top:
-    8px;
+      background: white;
 
-  cursor:
-    pointer;
+      border: 1px solid #ddd;
 
-}
+      border-radius: 10px;
 
+      padding: 12px;
 
-.btn:disabled {
+      margin-top: 12px;
 
-  opacity:
-    .6;
+      word-break: break-all;
 
-  cursor:
-    wait;
+      font-size: 13px;
 
-}
+    }
 
+    .btnCopiar {
 
-.save {
+      width: 100%;
 
-  background:
-    #16a34a;
+      margin-top: 10px;
 
-  color:
-    white;
+      background: #222;
 
-}
+      color: white;
 
+    }
 
-.secondary {
+    .erro {
 
-  background:
-    #e2e8f0;
+      background: #fff0f0;
 
-}
+      border: 1px solid #e5aaaa;
 
+      color: #9d1c1c;
 
-.cancel {
+      padding: 14px;
 
-  background:
-    #dc2626;
+      border-radius: 10px;
 
-  color:
-    white;
+      margin-top: 15px;
 
-}
+      display: none;
 
+    }
 
-.pix {
+    .sucesso {
 
-  display:
-    none;
+      background: #edf9f0;
 
-}
+      border: 1px solid #b8dfc1;
 
+      color: #16652d;
 
-.qr {
+      padding: 14px;
 
-  text-align:
-    center;
+      border-radius: 10px;
 
-}
+      margin-top: 15px;
 
+      display: none;
 
-.qr img {
+    }
 
-  width:
-    280px;
+    .produtos {
 
-  max-width:
-    100%;
+      margin-top: 15px;
 
-  border-radius:
-    10px;
+    }
 
-}
+    .produto {
 
+      background: #f6f6f6;
 
-.status {
+      padding: 10px;
 
-  margin-top:
-    15px;
+      border-radius: 9px;
 
-  padding:
-    14px;
+      margin-bottom: 8px;
 
-  border-radius:
-    12px;
+    }
 
-  text-align:
-    center;
+    .qr {
 
-  background:
-    #fef3c7;
+      text-align: center;
 
-  color:
-    #92400e;
+      margin-top: 15px;
 
-  font-weight:
-    bold;
+    }
 
-}
+    .qr img {
 
+      width: 220px;
 
-.status.paid {
+      height: 220px;
 
-  background:
-    #dcfce7;
+      max-width: 100%;
 
-  color:
-    #166534;
+    }
 
-}
+    @media(max-width: 550px) {
 
+      body {
 
-.pixCode {
+        padding: 10px;
 
-  width:
-    100%;
+      }
 
-  min-height:
-    120px;
+      .card {
 
-  margin-top:
-    12px;
+        padding: 16px;
 
-  font-size:
-    12px;
+      }
 
-}
+      .linha {
 
+        grid-template-columns: 1fr;
 
-.hidden {
+      }
 
-  display:
-    none !important;
+    }
 
-}
-
-
-.info {
-
-  font-size:
-    13px;
-
-  color:
-    #64748b;
-
-  line-height:
-    1.5;
-
-}
-
-
-</style>
+  </style>
 
 </head>
 
 
 <body>
 
-
 <div class="container">
 
+  <div class="card">
 
-<div class="header">
+    <h1>💰 Vendas IA + Pix</h1>
 
-<h1>
-  💰 Vendas IA + Pix
-</h1>
+    <div class="subtitulo">
+      Registre sua venda falando
+    </div>
 
-<p>
-  Fale a venda, confira e salve.
-</p>
 
-</div>
+    <!-- VOZ -->
 
+    <div class="voz-area">
 
-<!-- VOZ -->
+      <button
+        id="voiceBtn"
+        onclick="iniciarVoz()"
+      >
+        🎤
+      </button>
 
-<div class="card voice">
+      <div id="voiceStatus">
+        Clique no microfone e fale a venda
+      </div>
 
-<h3>
-  🎤 Registrar venda por voz
-</h3>
+      <div
+        id="transcript"
+        class="transcricao"
+      >
+        A fala reconhecida aparecerá aqui.
+      </div>
 
+      <div class="ajuda">
 
-<p class="info">
+        Exemplo:<br>
 
-Exemplo:
+        <b>
+          "Venda para João, dois pastéis
+          e uma Coca-Cola, total de
+          trinta reais."
+        </b>
 
-<br><br>
+      </div>
 
-<b>
-"João comprou dois pastéis
-e uma Coca por trinta reais"
-</b>
+    </div>
 
-</p>
 
+    <!-- ERRO -->
 
-<button
-  id="voiceBtn"
-  class="voiceBtn"
-  onclick="iniciarVoz()">
+    <div
+      id="erro"
+      class="erro"
+    ></div>
 
-🎤
 
-</button>
+    <!-- SUCESSO -->
 
+    <div
+      id="sucesso"
+      class="sucesso"
+    ></div>
 
-<div
-  id="voiceStatus"
-  class="voiceStatus">
 
-Toque para falar
+    <!-- DADOS -->
 
-</div>
+    <label>
+      Cliente
+    </label>
 
+    <input
+      id="cliente"
+      type="text"
+      placeholder="Nome do cliente"
+    >
 
-<div
-  id="transcript"
-  class="transcript">
 
-Sua fala aparecerá aqui.
+    <label>
+      Descrição da venda
+    </label>
 
-</div>
+    <textarea
+      id="descricao"
+      placeholder="Descrição da venda"
+    ></textarea>
 
-</div>
 
+    <div class="linha">
 
-<!-- VENDA -->
+      <div>
 
-<div class="card">
+        <label>
+          Valor total
+        </label>
 
+        <input
+          id="valor"
+          type="number"
+          step="0.01"
+          min="0"
+          placeholder="0,00"
+        >
 
-<div class="field">
+      </div>
 
-<label>
-  👤 Cliente
-</label>
+      <div>
 
-<input
-  id="cliente"
-  placeholder="Nome do cliente">
+        <label>
+          ID da venda
+        </label>
 
-</div>
+        <input
+          id="idVenda"
+          type="text"
+          placeholder="Será criado automaticamente"
+          readonly
+        >
 
+      </div>
 
-<div class="field">
+    </div>
 
-<label>
-  📝 Descrição
-</label>
 
-<textarea
-  id="descricao"
-  placeholder="Descrição da venda">
-</textarea>
+    <!-- PRODUTOS -->
 
-</div>
+    <div
+      id="produtos"
+      class="produtos"
+    ></div>
 
 
-<div
-  id="products"
-  class="products hidden">
+    <!-- SALVAR -->
 
-<b>
-  🛒 Produtos
-</b>
+    <button
+      id="btnSalvar"
+      class="btnSalvar"
+      onclick="salvarVenda()"
+    >
+      💳 SALVAR E GERAR PIX
+    </button>
 
-<div
-  id="productList">
-</div>
 
-</div>
+    <button
+      class="btnLimpar"
+      onclick="limparTela()"
+    >
+      🧹 LIMPAR
+    </button>
 
 
-<div class="field">
+    <!-- RESULTADO PIX -->
 
-<label>
-  💰 Valor
-</label>
+    <div
+      id="resultado"
+      class="resultado"
+    >
 
-<input
-  id="valor"
-  type="number"
-  step="0.01"
-  placeholder="0,00"
-  oninput="atualizarTotal()">
+      <h2>
+        ✅ Venda salva!
+      </h2>
 
-</div>
+      <div id="mensagemResultado"></div>
 
 
-<div class="total">
+      <div class="qr">
 
-<small>
-  TOTAL
-</small>
+        <img
+          id="qrCode"
+          alt="QR Code Pix"
+        >
 
-<strong id="total">
-  R$ 0,00
-</strong>
+      </div>
 
-</div>
 
+      <div
+        class="pix"
+        id="pixCode"
+      ></div>
 
-<button
-  id="saveBtn"
-  class="btn save"
-  onclick="salvarVenda()">
 
-💳 SALVAR E GERAR PIX
+      <button
+        class="btnCopiar"
+        onclick="copiarPix()"
+      >
+        📋 COPIAR PIX
+      </button>
 
-</button>
+    </div>
 
-
-<button
-  class="btn secondary"
-  onclick="novaVenda()">
-
-🔄 NOVA VENDA
-
-</button>
-
-
-</div>
-
-
-<!-- PIX -->
-
-<div
-  id="pixArea"
-  class="card pix">
-
-
-<h2 style="text-align:center">
-
-💚 PIX GERADO
-
-</h2>
-
-
-<p
-  id="vendaId"
-  class="info"
-  style="text-align:center">
-</p>
-
-
-<div class="qr">
-
-<img
-  id="qrCode"
-  alt="QR Code Pix">
-
-</div>
-
-
-<div
-  id="paymentStatus"
-  class="status">
-
-⏳ Aguardando pagamento
-
-</div>
-
-
-<textarea
-  id="pixCode"
-  class="pixCode"
-  readonly>
-</textarea>
-
-
-<button
-  class="btn secondary"
-  onclick="copiarPix()">
-
-📋 COPIAR PIX
-
-</button>
-
-
-<button
-  class="btn cancel"
-  onclick="cancelarVenda()">
-
-❌ CANCELAR VENDA
-
-</button>
-
-
-<p class="info">
-
-O Pix acima é registrado junto com
-a venda na planilha.
-
-</p>
-
-
-</div>
-
+  </div>
 
 </div>
 
 
 <script>
 
-/******************************************************
- * CONFIGURAÇÃO
- ******************************************************/
 
-/*
- * COLOQUE AQUI A URL DO SEU WEB APP DO APPS SCRIPT.
- *
- * Exemplo:
- *
- * https://script.google.com/macros/s/ABC123/exec
- */
+/********************************************************
+ * CONFIGURAÇÃO
+ ********************************************************/
 
 const API_URL =
-  'https://script.google.com/macros/s/AKfycbzdgivWQScmJI-hGeXPo5TszpJrBNr-D_o3HxBPCMk_iPUbK-1FiVHlbNQ4b2h6xI1chw/exec';
+  'https://script.google.com/macros/s/AKfycbxRzKlZx9fPdh-5SzqCMvHchxnoqxecj_VeV90eoUpyRBPsnQ2fwTpp3VcM8Rx0YlnrCA/exec';
 
 
-let reconhecimento =
-  null;
+/********************************************************
+ * VARIÁVEIS
+ ********************************************************/
+
+let reconhecimento = null;
+
+let gravando = false;
 
 
-let gravando =
-  false;
+/********************************************************
+ * ELEMENTOS
+ ********************************************************/
 
-
-let pixAtual =
-  null;
-
-
-let idVendaAtual =
-  null;
-
-
-let timerPagamento =
-  null;
-
-
-/******************************************************
- * API JSONP
- ******************************************************/
-
-function api(action, dados = {}) {
-
-  return new Promise(
-    function(resolve, reject) {
-
-      const callbackName =
-        'apiCallback_' +
-        Date.now() +
-        '_' +
-        Math.floor(
-          Math.random() * 100000
-        );
-
-
-      const params =
-        new URLSearchParams();
-
-
-      params.append(
-        'action',
-        action
-      );
-
-
-      params.append(
-        'callback',
-        callbackName
-      );
-
-
-      Object.keys(dados)
-        .forEach(
-          function(key) {
-
-            params.append(
-              key,
-              dados[key]
-            );
-
-          }
-        );
-
-
-      const script =
-        document.createElement(
-          'script'
-        );
-
-
-      const timeout =
-        setTimeout(
-          function() {
-
-            cleanup();
-
-            reject(
-              new Error(
-                'Tempo limite da comunicação.'
-              )
-            );
-
-          },
-          30000
-        );
-
-
-      window[callbackName] =
-        function(data) {
-
-          clearTimeout(
-            timeout
-          );
-
-          cleanup();
-
-          resolve(data);
-
-        };
-
-
-      function cleanup() {
-
-        delete window[
-          callbackName
-        ];
-
-
-        if (
-          script.parentNode
-        ) {
-
-          script.parentNode
-            .removeChild(
-              script
-            );
-
-        }
-
-      }
-
-
-      script.onerror =
-        function() {
-
-          clearTimeout(
-            timeout
-          );
-
-          cleanup();
-
-          reject(
-            new Error(
-              'Não foi possível conectar ao Apps Script.'
-            )
-          );
-
-        };
-
-
-      script.src =
-        API_URL +
-        '?' +
-        params.toString();
-
-
-      document
-        .body
-        .appendChild(
-          script
-        );
-
-    }
+const voiceBtn =
+  document.getElementById(
+    'voiceBtn'
   );
 
-}
+
+const voiceStatus =
+  document.getElementById(
+    'voiceStatus'
+  );
 
 
-/******************************************************
- * RECONHECIMENTO DE VOZ
- ******************************************************/
+const transcript =
+  document.getElementById(
+    'transcript'
+  );
+
+
+/********************************************************
+ * INICIAR VOZ
+ ********************************************************/
 
 function iniciarVoz() {
+
+
+  /*
+   * Verifica navegador
+   */
 
   const SpeechRecognition =
     window.SpeechRecognition ||
@@ -955,7 +703,7 @@ function iniciarVoz() {
 
   if (!SpeechRecognition) {
 
-    alert(
+    mostrarErro(
       'Seu navegador não suporta reconhecimento de voz. ' +
       'Use o Google Chrome.'
     );
@@ -965,111 +713,175 @@ function iniciarVoz() {
   }
 
 
+  /*
+   * Se já estiver gravando,
+   * para a gravação.
+   */
+
   if (gravando) {
 
-    reconhecimento.stop();
+    if (reconhecimento) {
+
+      reconhecimento.stop();
+
+    }
 
     return;
 
   }
 
 
+  /*
+   * Cria novo reconhecimento
+   */
+
   reconhecimento =
     new SpeechRecognition();
 
+
+  /*
+   * Português do Brasil
+   */
 
   reconhecimento.lang =
     'pt-BR';
 
 
+  /*
+   * Uma fala por vez
+   */
+
   reconhecimento.continuous =
     false;
 
+
+  /*
+   * Mostra texto provisório
+   */
 
   reconhecimento.interimResults =
     true;
 
 
+  reconhecimento.maxAlternatives =
+    3;
+
+
+  /*
+   * COMEÇOU
+   */
+
   reconhecimento.onstart =
     function() {
 
-      gravando =
-        true;
+      gravando = true;
 
 
-      document
-        .getElementById(
-          'voiceBtn'
-        )
+      voiceBtn
         .classList
-        .add(
-          'recording'
-        );
+        .add('recording');
 
 
-      document
-        .getElementById(
-          'voiceBtn'
-        )
-        .textContent =
+      voiceBtn.textContent =
         '⏹️';
 
 
-      document
-        .getElementById(
-          'voiceStatus'
-        )
-        .textContent =
-        '🔴 Ouvindo...';
+      voiceStatus.textContent =
+        '🔴 Ouvindo... fale a venda';
+
+
+      transcript.textContent =
+        'Estou ouvindo...';
+
+
+      esconderErro();
 
     };
 
+
+  /*
+   * RESULTADO
+   */
 
   reconhecimento.onresult =
     function(event) {
 
-      let texto =
+
+      let textoFinal =
+        '';
+
+
+      let textoParcial =
         '';
 
 
       for (
-        let i =
-          event.resultIndex;
-
-        i <
-          event.results.length;
-
+        let i = event.resultIndex;
+        i < event.results.length;
         i++
       ) {
 
-        texto +=
-          event.results[i][0]
+
+        const resultado =
+          event.results[i];
+
+
+        const texto =
+          resultado[0]
             .transcript;
+
+
+        if (
+          resultado.isFinal
+        ) {
+
+          textoFinal +=
+            texto;
+
+        } else {
+
+          textoParcial +=
+            texto;
+
+        }
 
       }
 
 
-      document
-        .getElementById(
-          'transcript'
-        )
-        .textContent =
-        texto;
+      /*
+       * Mostrar na tela
+       */
+
+      const textoTela =
+        (
+          textoFinal ||
+          textoParcial
+        ).trim();
 
 
-      const ultima =
-        event.results[
-          event.results.length - 1
-        ];
+      if (textoTela) {
 
+        transcript.textContent =
+          textoTela;
+
+      }
+
+
+      /*
+       * Só interpreta quando
+       * a fala terminou.
+       */
 
       if (
-        ultima &&
-        ultima.isFinal
+        textoFinal.trim()
       ) {
 
+        voiceStatus.textContent =
+          '🤖 Entendi sua fala. Analisando...';
+
+
         interpretarIA(
-          texto
+          textoFinal.trim()
         );
 
       }
@@ -1077,23 +889,87 @@ function iniciarVoz() {
     };
 
 
+  /*
+   * ERRO
+   */
+
   reconhecimento.onerror =
     function(event) {
+
+
+      console.error(
+        'SpeechRecognition:',
+        event.error
+      );
+
 
       finalizarVoz();
 
 
-      console.log(
-        event
-      );
+      let mensagem =
+        'Erro no reconhecimento de voz.';
 
 
-      alert(
-        'Não consegui reconhecer sua voz.'
+      switch (
+        event.error
+      ) {
+
+
+        case 'not-allowed':
+
+          mensagem =
+            '🚫 O microfone está bloqueado. ' +
+            'Permita o acesso ao microfone no navegador.';
+
+          break;
+
+
+        case 'no-speech':
+
+          mensagem =
+            '🎤 Não detectei nenhuma fala. ' +
+            'Clique novamente e fale mais perto do microfone.';
+
+          break;
+
+
+        case 'audio-capture':
+
+          mensagem =
+            '🎤 Não consegui acessar o microfone. ' +
+            'Verifique se existe um microfone conectado.';
+
+          break;
+
+
+        case 'network':
+
+          mensagem =
+            '🌐 O reconhecimento de voz apresentou um erro de rede.';
+
+          break;
+
+
+        case 'aborted':
+
+          mensagem =
+            'Gravação interrompida.';
+
+          break;
+
+      }
+
+
+      mostrarErro(
+        mensagem
       );
 
     };
 
+
+  /*
+   * TERMINOU
+   */
 
   reconhecimento.onend =
     function() {
@@ -1103,144 +979,26 @@ function iniciarVoz() {
     };
 
 
-  reconhecimento.start();
-
-}
-
-
-/******************************************************
- * FINALIZAR VOZ
- ******************************************************/
-
-function finalizarVoz() {
-
-  gravando =
-    false;
-
-
-  document
-    .getElementById(
-      'voiceBtn'
-    )
-    .classList
-    .remove(
-      'recording'
-    );
-
-
-  document
-    .getElementById(
-      'voiceBtn'
-    )
-    .textContent =
-    '🎤';
-
-
-  document
-    .getElementById(
-      'voiceStatus'
-    )
-    .textContent =
-    'Processando...';
-
-}
-
-
-/******************************************************
- * IA
- ******************************************************/
-
-async function interpretarIA(
-  texto
-) {
+  /*
+   * COMEÇA O MICROFONE
+   */
 
   try {
 
-    const resultado =
-      await api(
-        'interpretarVenda',
-        {
-          texto:
-            texto
-        }
-      );
+    reconhecimento.start();
 
-
-    if (
-      resultado.erro
-    ) {
-
-      alert(
-        resultado.mensagem ||
-        'Não consegui identificar a venda.'
-      );
-
-      document
-        .getElementById(
-          'voiceStatus'
-        )
-        .textContent =
-        'Tente falar novamente.';
-
-      return;
-
-    }
-
-
-    document
-      .getElementById(
-        'cliente'
-      )
-      .value =
-      resultado.cliente ||
-      '';
-
-
-    document
-      .getElementById(
-        'descricao'
-      )
-      .value =
-      resultado.descricao ||
-      '';
-
-
-    document
-      .getElementById(
-        'valor'
-      )
-      .value =
-      resultado.valor ||
-      '';
-
-
-    mostrarProdutos(
-      resultado.produtos ||
-      []
-    );
-
-
-    atualizarTotal();
-
-
-    document
-      .getElementById(
-        'voiceStatus'
-      )
-      .textContent =
-      '✅ Venda reconhecida!';
-
-
-  } catch(error) {
+  } catch (erro) {
 
     console.error(
-      error
+      erro
     );
 
 
-    alert(
-      'Erro na IA:\n\n' +
-      error.message
+    finalizarVoz();
+
+
+    mostrarErro(
+      'Não foi possível iniciar o microfone.'
     );
 
   }
@@ -1248,27 +1006,215 @@ async function interpretarIA(
 }
 
 
-/******************************************************
- * PRODUTOS
- ******************************************************/
+/********************************************************
+ * FINALIZAR VOZ
+ ********************************************************/
+
+function finalizarVoz() {
+
+  gravando = false;
+
+
+  voiceBtn
+    .classList
+    .remove('recording');
+
+
+  voiceBtn.textContent =
+    '🎤';
+
+}
+
+
+/********************************************************
+ * INTERPRETAR COM IA
+ ********************************************************/
+
+function interpretarIA(
+  texto
+) {
+
+
+  if (!texto) {
+
+    mostrarErro(
+      'Não recebi o texto da sua fala.'
+    );
+
+    return;
+
+  }
+
+
+  voiceStatus.textContent =
+    '🤖 Analisando a venda...';
+
+
+  /*
+   * Chamada ao Apps Script
+   */
+
+  api(
+    'interpretarVenda',
+    {
+      texto: texto
+    },
+
+    function(resultado) {
+
+
+      console.log(
+        'Resposta da IA:',
+        resultado
+      );
+
+
+      if (!resultado) {
+
+        mostrarErro(
+          'O servidor não retornou nenhuma resposta.'
+        );
+
+        return;
+
+      }
+
+
+      if (
+        resultado.success === false &&
+        resultado.erro
+      ) {
+
+        mostrarErro(
+          resultado.erro
+        );
+
+        voiceStatus.textContent =
+          '⚠️ Não foi possível interpretar a venda.';
+
+        return;
+
+      }
+
+
+      if (
+        resultado.erro
+      ) {
+
+
+        if (
+          resultado.erro ===
+          'valor_ausente'
+        ) {
+
+          mostrarErro(
+            'Não encontrei o valor da venda. ' +
+            'Fale também o valor total.'
+          );
+
+        } else if (
+          resultado.erro ===
+          'nao_e_venda'
+        ) {
+
+          mostrarErro(
+            'Não identifiquei uma venda. ' +
+            'Fale o cliente, os produtos e o valor.'
+          );
+
+        } else {
+
+          mostrarErro(
+            resultado.erro
+          );
+
+        }
+
+
+        voiceStatus.textContent =
+          '⚠️ Venda não identificada.';
+
+        return;
+
+      }
+
+
+      /*
+       * Preencher campos
+       */
+
+      document
+        .getElementById(
+          'cliente'
+        )
+        .value =
+        resultado.cliente ||
+        '';
+
+
+      document
+        .getElementById(
+          'descricao'
+        )
+        .value =
+        resultado.descricao ||
+        '';
+
+
+      document
+        .getElementById(
+          'valor'
+        )
+        .value =
+        resultado.valor ||
+        '';
+
+
+      /*
+       * Produtos
+       */
+
+      mostrarProdutos(
+        resultado.produtos ||
+        []
+      );
+
+
+      voiceStatus.textContent =
+        '✅ Venda identificada! Confira os dados.';
+
+
+      esconderErro();
+
+
+      mostrarSucesso(
+        'A venda foi identificada. ' +
+        'Confira os dados antes de salvar.'
+      );
+
+    }
+
+  );
+
+}
+
+
+/********************************************************
+ * MOSTRAR PRODUTOS
+ ********************************************************/
 
 function mostrarProdutos(
   produtos
 ) {
 
-  const area =
+
+  const div =
     document.getElementById(
-      'products'
+      'produtos'
     );
 
 
-  const lista =
-    document.getElementById(
-      'productList'
-    );
-
-
-  lista.innerHTML =
+  div.innerHTML =
     '';
 
 
@@ -1277,35 +1223,43 @@ function mostrarProdutos(
     !produtos.length
   ) {
 
-    area
-      .classList
-      .add(
-        'hidden'
-      );
-
     return;
 
   }
 
 
-  area
-    .classList
-    .remove(
-      'hidden'
+  const titulo =
+    document.createElement(
+      'div'
     );
+
+
+  titulo.innerHTML =
+    '<b>🛒 Produtos identificados:</b>';
+
+
+  div.appendChild(
+    titulo
+  );
 
 
   produtos.forEach(
     function(produto) {
 
-      const div =
+
+      const item =
         document.createElement(
           'div'
         );
 
 
-      div.className =
-        'product';
+      item.className =
+        'produto';
+
+
+      const nome =
+        produto.nome ||
+        'Produto';
 
 
       const quantidade =
@@ -1313,25 +1267,42 @@ function mostrarProdutos(
         1;
 
 
-      const valor =
-        Number(
-          produto.valorTotal ||
-          0
-        );
+      const valorTotal =
+        produto.valorTotal;
 
 
-      div.textContent =
+      let texto =
+        '🛒 ' +
         quantidade +
         'x ' +
-        (produto.nome || 'Produto') +
-        ' - R$ ' +
-        valor
+        nome;
+
+
+      if (
+        valorTotal !==
+        undefined
+      ) {
+
+        texto +=
+          ' — R$ ' +
+          Number(
+            valorTotal
+          )
           .toFixed(2)
-          .replace('.', ',');
+          .replace(
+            '.',
+            ','
+          );
+
+      }
 
 
-      lista.appendChild(
-        div
+      item.textContent =
+        texto;
+
+
+      div.appendChild(
+        item
       );
 
     }
@@ -1340,47 +1311,15 @@ function mostrarProdutos(
 }
 
 
-/******************************************************
- * TOTAL
- ******************************************************/
-
-function atualizarTotal() {
-
-  const valor =
-    Number(
-      document
-        .getElementById(
-          'valor'
-        )
-        .value ||
-      0
-    );
-
-
-  document
-    .getElementById(
-      'total'
-    )
-    .textContent =
-    valor.toLocaleString(
-      'pt-BR',
-      {
-        style:
-          'currency',
-
-        currency:
-          'BRL'
-      }
-    );
-
-}
-
-
-/******************************************************
+/********************************************************
  * SALVAR VENDA
- ******************************************************/
+ ********************************************************/
 
-async function salvarVenda() {
+function salvarVenda() {
+
+
+  esconderErro();
+
 
   const cliente =
     document
@@ -1400,456 +1339,672 @@ async function salvarVenda() {
       .trim();
 
 
-  const valor =
-    Number(
-      document
-        .getElementById(
-          'valor'
-        )
-        .value
-    );
-
-
-  if (!descricao) {
-
-    alert(
-      'Informe a descrição da venda.'
-    );
-
-    return;
-
-  }
-
-
-  if (
-    !valor ||
-    valor <= 0
-  ) {
-
-    alert(
-      'Informe um valor válido.'
-    );
-
-    return;
-
-  }
-
-
-  const botao =
-    document.getElementById(
-      'saveBtn'
-    );
-
-
-  botao.disabled =
-    true;
-
-
-  botao.textContent =
-    '⏳ SALVANDO...';
-
-
-  try {
-
-    const resultado =
-      await api(
-        'registrarVenda',
-        {
-
-          cliente:
-            cliente ||
-            'Cliente não informado',
-
-          descricao:
-            descricao,
-
-          valor:
-            valor
-
-        }
-      );
-
-
-    if (
-      !resultado.success
-    ) {
-
-      throw new Error(
-        resultado.erro ||
-        'Não foi possível salvar.'
-      );
-
-    }
-
-
-    idVendaAtual =
-      resultado.idVenda;
-
-
-    pixAtual =
-      resultado.pixCode;
-
-
-    mostrarPix(
-      resultado
-    );
-
-
-  } catch(error) {
-
-    console.error(
-      error
-    );
-
-
-    alert(
-      'Erro ao salvar:\n\n' +
-      error.message
-    );
-
-  }
-
-
-  botao.disabled =
-    false;
-
-
-  botao.textContent =
-    '💳 SALVAR E GERAR PIX';
-
-}
-
-
-/******************************************************
- * MOSTRAR PIX
- ******************************************************/
-
-function mostrarPix(
-  resultado
-) {
-
-  document
-    .getElementById(
-      'pixArea'
-    )
-    .style.display =
-    'block';
-
-
-  document
-    .getElementById(
-      'vendaId'
-    )
-    .textContent =
-    'Venda: ' +
-    resultado.idVenda;
-
-
-  document
-    .getElementById(
-      'pixCode'
-    )
-    .value =
-    resultado.pixCode;
+  const valorTexto =
+    document
+      .getElementById(
+        'valor'
+      )
+      .value
+      .trim();
 
 
   /*
-   * QR Code.
-   *
-   * Aqui usamos QuickChart apenas
-   * para transformar o Pix copia e cola
-   * em imagem QR.
+   * Validação
    */
 
-  const qrUrl =
-    'https://quickchart.io/qr' +
-    '?size=300' +
-    '&text=' +
-    encodeURIComponent(
-      resultado.pixCode
+  if (!descricao) {
+
+    mostrarErro(
+      'Digite ou dite a descrição da venda.'
     );
-
-
-  document
-    .getElementById(
-      'qrCode'
-    )
-    .src =
-    qrUrl;
-
-
-  document
-    .getElementById(
-      'paymentStatus'
-    )
-    .className =
-    'status';
-
-
-  document
-    .getElementById(
-      'paymentStatus'
-    )
-    .textContent =
-    '⏳ Aguardando pagamento';
-
-
-  document
-    .getElementById(
-      'pixArea'
-    )
-    .scrollIntoView({
-      behavior:
-        'smooth'
-    });
-
-
-  iniciarMonitoramento();
-
-}
-
-
-/******************************************************
- * COPIAR PIX
- ******************************************************/
-
-async function copiarPix() {
-
-  const campo =
-    document.getElementById(
-      'pixCode'
-    );
-
-
-  try {
-
-    await navigator
-      .clipboard
-      .writeText(
-        campo.value
-      );
-
-
-    alert(
-      '✅ Pix copiado!'
-    );
-
-
-  } catch(error) {
-
-    campo.select();
-
-
-    document
-      .execCommand(
-        'copy'
-      );
-
-
-    alert(
-      '✅ Pix copiado!'
-    );
-
-  }
-
-}
-
-
-/******************************************************
- * VERIFICAR PAGAMENTO
- ******************************************************/
-
-function iniciarMonitoramento() {
-
-  if (
-    timerPagamento
-  ) {
-
-    clearInterval(
-      timerPagamento
-    );
-
-  }
-
-
-  verificarPagamento();
-
-
-  timerPagamento =
-    setInterval(
-      verificarPagamento,
-      5000
-    );
-
-}
-
-
-async function verificarPagamento() {
-
-  if (
-    !idVendaAtual
-  ) {
 
     return;
 
   }
 
 
-  try {
+  if (!valorTexto) {
 
-    const resultado =
-      await api(
-        'verificarPagamento',
-        {
+    mostrarErro(
+      'Informe o valor da venda.'
+    );
 
-          idVenda:
-            idVendaAtual
+    return;
 
-        }
+  }
+
+
+  const valor =
+    parseFloat(
+      valorTexto
+        .replace(
+          ',',
+          '.'
+        )
+    );
+
+
+  if (
+    isNaN(valor) ||
+    valor <= 0
+  ) {
+
+    mostrarErro(
+      'O valor da venda é inválido.'
+    );
+
+    return;
+
+  }
+
+
+  /*
+   * Desabilitar botão
+   */
+
+  const btn =
+    document
+      .getElementById(
+        'btnSalvar'
       );
 
 
-    if (
-      resultado.confirmado
-    ) {
+  btn.disabled =
+    true;
 
-      clearInterval(
-        timerPagamento
+
+  btn.textContent =
+    '⏳ SALVANDO...';
+
+
+  voiceStatus.textContent =
+    '💳 Salvando venda e gerando Pix...';
+
+
+  /*
+   * Enviar para Apps Script
+   */
+
+  api(
+    'registrarVenda',
+    {
+
+      cliente:
+        cliente ||
+        'Cliente não informado',
+
+      descricao:
+        descricao,
+
+      valor:
+        valor.toFixed(2)
+
+    },
+
+    function(resultado) {
+
+
+      console.log(
+        'Resposta do salvamento:',
+        resultado
       );
 
 
-      const status =
-        document.getElementById(
-          'paymentStatus'
+      btn.disabled =
+        false;
+
+
+      btn.textContent =
+        '💳 SALVAR E GERAR PIX';
+
+
+      if (!resultado) {
+
+        mostrarErro(
+          'O servidor não retornou resposta.'
+        );
+
+        return;
+
+      }
+
+
+      if (
+        resultado.success !==
+        true
+      ) {
+
+        mostrarErro(
+          resultado.erro ||
+          resultado.message ||
+          'Não foi possível salvar a venda.'
+        );
+
+        return;
+
+      }
+
+
+      /*
+       * ID
+       */
+
+      document
+        .getElementById(
+          'idVenda'
+        )
+        .value =
+        resultado.idVenda ||
+        '';
+
+
+      /*
+       * Pix
+       */
+
+      const pix =
+        resultado.pixCode ||
+        '';
+
+
+      if (!pix) {
+
+        mostrarErro(
+          'A venda foi salva, mas o servidor não retornou o Pix.'
+        );
+
+        return;
+
+      }
+
+
+      document
+        .getElementById(
+          'pixCode'
+        )
+        .textContent =
+        pix;
+
+
+      /*
+       * QR CODE
+       */
+
+      const qr =
+        document
+          .getElementById(
+            'qrCode'
+          );
+
+
+      qr.src =
+        'https://api.qrserver.com/v1/create-qr-code/' +
+        '?size=300x300&data=' +
+        encodeURIComponent(
+          pix
         );
 
 
-      status.className =
-        'status paid';
+      /*
+       * Resultado
+       */
+
+      document
+        .getElementById(
+          'mensagemResultado'
+        )
+        .textContent =
+        'Venda ' +
+        (resultado.idVenda || '') +
+        ' registrada com sucesso. ' +
+        'Pix gerado no valor de R$ ' +
+        Number(
+          valor
+        )
+        .toFixed(2)
+        .replace(
+          '.',
+          ','
+        ) +
+        '.';
 
 
-      status.textContent =
-        '✅ PAGAMENTO CONFIRMADO!';
+      document
+        .getElementById(
+          'resultado'
+        )
+        .style
+        .display =
+        'block';
+
+
+      mostrarSucesso(
+        '✅ Venda salva e Pix gerado!'
+      );
+
+
+      voiceStatus.textContent =
+        '✅ Venda salva com sucesso!';
 
     }
 
-  } catch(error) {
-
-    console.log(
-      'Verificação:',
-      error
-    );
-
-  }
+  );
 
 }
 
 
-/******************************************************
- * CANCELAR
- ******************************************************/
+/********************************************************
+ * API VIA JSONP
+ *
+ * Isso evita problemas de CORS entre
+ * GitHub Pages e Google Apps Script.
+ ********************************************************/
 
-async function cancelarVenda() {
+function api(
+  action,
+  dados,
+  callback
+) {
+
+
+  /*
+   * Verificar URL
+   */
 
   if (
-    !idVendaAtual
+    !API_URL ||
+    API_URL.indexOf(
+      'script.google.com'
+    ) === -1
   ) {
+
+    mostrarErro(
+      'A URL do Google Apps Script ainda não foi configurada no index.html.'
+    );
 
     return;
 
   }
 
 
-  if (
-    !confirm(
-      'Deseja cancelar esta venda?'
-    )
-  ) {
+  /*
+   * Nome único para callback
+   */
+
+  const callbackName =
+    'callback_' +
+    Date.now() +
+    '_' +
+    Math.floor(
+      Math.random() *
+      100000
+    );
+
+
+  /*
+   * Criar função global
+   */
+
+  window[callbackName] =
+    function(resultado) {
+
+
+      try {
+
+        callback(
+          resultado
+        );
+
+      } finally {
+
+        /*
+         * Limpar callback
+         */
+
+        delete window[
+          callbackName
+        ];
+
+        if (
+          script.parentNode
+        ) {
+
+          script
+            .parentNode
+            .removeChild(
+              script
+            );
+
+        }
+
+      }
+
+    };
+
+
+  /*
+   * Criar URL
+   */
+
+  const params =
+    new URLSearchParams();
+
+
+  params.set(
+    'action',
+    action
+  );
+
+
+  params.set(
+    'callback',
+    callbackName
+  );
+
+
+  /*
+   * Adicionar dados
+   */
+
+  if (dados) {
+
+    Object.keys(
+      dados
+    ).forEach(
+      function(chave) {
+
+        params.set(
+          chave,
+          dados[chave]
+        );
+
+      }
+    );
+
+  }
+
+
+  const url =
+    API_URL +
+    (
+      API_URL.includes('?')
+        ? '&'
+        : '?'
+    ) +
+    params.toString();
+
+
+  /*
+   * Script JSONP
+   */
+
+  const script =
+    document.createElement(
+      'script'
+    );
+
+
+  script.src =
+    url;
+
+
+  script.async =
+    true;
+
+
+  /*
+   * Timeout
+   */
+
+  const timeout =
+    setTimeout(
+      function() {
+
+
+        delete window[
+          callbackName
+        ];
+
+
+        if (
+          script.parentNode
+        ) {
+
+          script
+            .parentNode
+            .removeChild(
+              script
+            );
+
+        }
+
+
+        mostrarErro(
+          'Tempo esgotado ao comunicar com o Google Apps Script.'
+        );
+
+
+      },
+      30000
+    );
+
+
+  /*
+   * Se respondeu,
+   * cancelar timeout
+   */
+
+  const callbackOriginal =
+    window[callbackName];
+
+
+  window[callbackName] =
+    function(resultado) {
+
+
+      clearTimeout(
+        timeout
+      );
+
+
+      callbackOriginal(
+        resultado
+      );
+
+    };
+
+
+  /*
+   * Erro de carregamento
+   */
+
+  script.onerror =
+    function() {
+
+
+      clearTimeout(
+        timeout
+      );
+
+
+      delete window[
+        callbackName
+      ];
+
+
+      if (
+        script.parentNode
+      ) {
+
+        script
+          .parentNode
+          .removeChild(
+            script
+          );
+
+      }
+
+
+      mostrarErro(
+        'Não consegui conectar ao Google Apps Script. ' +
+        'Confira a URL do Web App.'
+      );
+
+    };
+
+
+  document
+    .body
+    .appendChild(
+      script
+    );
+
+}
+
+
+/********************************************************
+ * COPIAR PIX
+ ********************************************************/
+
+function copiarPix() {
+
+
+  const pix =
+    document
+      .getElementById(
+        'pixCode'
+      )
+      .textContent
+      .trim();
+
+
+  if (!pix) {
+
+    mostrarErro(
+      'Não existe Pix para copiar.'
+    );
 
     return;
 
   }
 
 
-  try {
+  /*
+   * Navegadores modernos
+   */
 
-    const resultado =
-      await api(
-        'cancelarVenda',
-        {
+  if (
+    navigator.clipboard &&
+    navigator.clipboard.writeText
+  ) {
 
-          idVenda:
-            idVendaAtual
+    navigator.clipboard
+      .writeText(
+        pix
+      )
+      .then(
+        function() {
+
+          mostrarSucesso(
+            '📋 Pix copiado!'
+          );
+
+        }
+      )
+      .catch(
+        function() {
+
+          copiarPixAntigo(
+            pix
+          );
 
         }
       );
 
-
-    if (
-      !resultado.success
-    ) {
-
-      throw new Error(
-        resultado.erro ||
-        'Erro ao cancelar.'
-      );
-
-    }
-
-
-    if (
-      timerPagamento
-    ) {
-
-      clearInterval(
-        timerPagamento
-      );
-
-    }
-
-
-    document
-      .getElementById(
-        'paymentStatus'
-      )
-      .textContent =
-      '❌ VENDA CANCELADA';
-
-
-  } catch(error) {
-
-    alert(
-      error.message
-    );
+    return;
 
   }
+
+
+  copiarPixAntigo(
+    pix
+  );
 
 }
 
 
-/******************************************************
- * NOVA VENDA
- ******************************************************/
+/********************************************************
+ * COPIAR PIX - COMPATIBILIDADE
+ ********************************************************/
 
-function novaVenda() {
+function copiarPixAntigo(
+  texto
+) {
 
-  if (
-    timerPagamento
-  ) {
 
-    clearInterval(
-      timerPagamento
+  const area =
+    document.createElement(
+      'textarea'
+    );
+
+
+  area.value =
+    texto;
+
+
+  area.style.position =
+    'fixed';
+
+
+  area.style.left =
+    '-9999px';
+
+
+  document
+    .body
+    .appendChild(
+      area
+    );
+
+
+  area.select();
+
+
+  try {
+
+    document.execCommand(
+      'copy'
+    );
+
+
+    mostrarSucesso(
+      '📋 Pix copiado!'
+    );
+
+  } catch (erro) {
+
+    mostrarErro(
+      'Não consegui copiar automaticamente. ' +
+      'Selecione o código Pix manualmente.'
     );
 
   }
 
 
-  pixAtual =
-    null;
+  document
+    .body
+    .removeChild(
+      area
+    );
+
+}
 
 
-  idVendaAtual =
-    null;
+/********************************************************
+ * LIMPAR
+ ********************************************************/
+
+function limparTela() {
 
 
   document
@@ -1878,44 +2033,159 @@ function novaVenda() {
 
   document
     .getElementById(
+      'idVenda'
+    )
+    .value =
+    '';
+
+
+  document
+    .getElementById(
       'transcript'
     )
     .textContent =
-    'Sua fala aparecerá aqui.';
+    'A fala reconhecida aparecerá aqui.';
 
 
   document
     .getElementById(
-      'voiceStatus'
+      'produtos'
     )
-    .textContent =
-    'Toque para falar';
+    .innerHTML =
+    '';
 
 
   document
     .getElementById(
-      'products'
+      'resultado'
     )
-    .classList
-    .add(
-      'hidden'
-    );
-
-
-  document
-    .getElementById(
-      'pixArea'
-    )
-    .style.display =
+    .style
+    .display =
     'none';
 
 
-  atualizarTotal();
+  esconderErro();
+
+
+  document
+    .getElementById(
+      'sucesso'
+    )
+    .style
+    .display =
+    'none';
+
+
+  voiceStatus.textContent =
+    'Clique no microfone e fale a venda.';
 
 }
 
-</script>
 
+/********************************************************
+ * MENSAGENS
+ ********************************************************/
+
+function mostrarErro(
+  mensagem
+) {
+
+
+  const erro =
+    document.getElementById(
+      'erro'
+    );
+
+
+  erro.textContent =
+    '❌ ' +
+    mensagem;
+
+
+  erro.style.display =
+    'block';
+
+
+  document
+    .getElementById(
+      'sucesso'
+    )
+    .style
+    .display =
+    'none';
+
+}
+
+
+function esconderErro() {
+
+
+  document
+    .getElementById(
+      'erro'
+    )
+    .style
+    .display =
+    'none';
+
+}
+
+
+function mostrarSucesso(
+  mensagem
+) {
+
+
+  const sucesso =
+    document.getElementById(
+      'sucesso'
+    );
+
+
+  sucesso.textContent =
+    mensagem;
+
+
+  sucesso.style.display =
+    'block';
+
+
+  document
+    .getElementById(
+      'erro'
+    )
+    .style
+    .display =
+    'none';
+
+}
+
+
+/********************************************************
+ * VERIFICAR SUPORTE
+ ********************************************************/
+
+window.addEventListener(
+  'load',
+  function() {
+
+
+    const SpeechRecognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+
+    if (!SpeechRecognition) {
+
+      voiceStatus.textContent =
+        '⚠️ Seu navegador não suporta voz. Use o Google Chrome.';
+
+    }
+
+  }
+);
+
+</script>
 
 </body>
 
