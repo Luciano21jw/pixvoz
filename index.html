@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width,
+      initial-scale=1,
+      maximum-scale=1">
+
+<title>Vendas IA + Pix</title>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f1f5f9;
+  color:#0f172a;
+}
+
+.container{
+  max-width:480px;
+  margin:auto;
+  padding:18px;
+}
+
+.header{
+  background:#0f172a;
+  color:white;
+  padding:20px;
+  border-radius:20px;
+  margin-bottom:15px;
+}
+
+.header h1{
+  margin:0;
+  font-size:23px;
+}
+
+.header p{
+  margin:7px 0 0;
+  color:#cbd5e1;
+}
+
+.card{
+  background:white;
+  padding:18px;
+  border-radius:20px;
+  margin-bottom:15px;
+  box-shadow:0 5px 20px rgba(0,0,0,.08);
+}
+
+label{
+  display:block;
+  font-weight:bold;
+  font-size:14px;
+  margin-bottom:6px;
+}
+
+input,
+textarea{
+  width:100%;
+  padding:13px;
+  border:1px solid #cbd5e1;
+  border-radius:12px;
+  font-size:16px;
+}
+
+textarea{
+  min-height:80px;
+}
+
+.field{
+  margin-bottom:15px;
+}
+
+.voice{
+  text-align:center;
+}
+
+.voiceBtn{
+  width:105px;
+  height:105px;
+  border-radius:50%;
+  border:0;
+  background:#2563eb;
+  color:white;
+  font-size:40px;
+  cursor:pointer;
+}
+
+.voiceBtn.recording{
+  background:#dc2626;
+  animation:pulse 1s infinite;
+}
+
+@keyframes pulse{
+  50%{
+    transform:scale(1.08);
+  }
+}
+
+.voiceStatus{
+  margin-top:12px;
+  color:#64748b;
+}
+
+.transcript{
+  margin-top:12px;
+  background:#f8fafc;
+  padding:12px;
+  border-radius:12px;
+  min-height:45px;
+}
+
+.total{
+  text-align:center;
+  background:#ecfdf5;
+  padding:18px;
+  border-radius:15px;
+  margin-bottom:15px;
+}
+
+.total small{
+  color:#047857;
+}
+
+.total strong{
+  display:block;
+  font-size:32px;
+  color:#047857;
+  margin-top:5px;
+}
+
+.btn{
+  width:100%;
+  padding:15px;
+  border:0;
+  border-radius:13px;
+  font-size:16px;
+  font-weight:bold;
+  margin-top:8px;
+  cursor:pointer;
+}
+
+.save{
+  background:#16a34a;
+  color:white;
+}
+
+.secondary{
+  background:#e2e8f0;
+}
+
+.cancel{
+  background:#dc2626;
+  color:white;
+}
+
+.products{
+  background:#f8fafc;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:15px;
+}
+
+.product{
+  padding:7px 0;
+  border-bottom:1px solid #e2e8f0;
+}
+
+.pix{
+  display:none;
+}
+
+.qr{
+  text-align:center;
+}
+
+.qr img{
+  width:260px;
+  max-width:100%;
+}
+
+.status{
+  margin-top:12px;
+  padding:13px;
+  border-radius:12px;
+  text-align:center;
+  background:#fef3c7;
+  color:#92400e;
+  font-weight:bold;
+}
+
+.status.paid{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.pixCode{
+  width:100%;
+  min-height:110px;
+  margin-top:12px;
+  font-size:12px;
+}
+
+.hidden{
+  display:none!important;
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+<div class="header">
+
+<h1>💰 Vendas IA + Pix</h1>
+
+<p>
+Venda por voz, salve na planilha e gere o Pix.
+</p>
+
+</div>
+
+
+<!-- VOZ -->
+
+<div class="card voice">
+
+<h3>🎤 Registrar venda por voz</h3>
+
+<p>
+Exemplo:
+<br>
+<b>
+"João comprou duas Coca-Cola e um pastel
+por vinte reais"
+</b>
+</p>
+
+
+<button
+id="voiceBtn"
+class="voiceBtn"
+onclick="iniciarVoz()">
+
+🎤
+
+</button>
+
+
+<div
+id="voiceStatus"
+class="voiceStatus">
+
+Toque para falar
+
+</div>
+
+
+<div
+id="transcript"
+class="transcript">
+
+Sua fala aparecerá aqui.
+
+</div>
+
+</div>
+
+
+<!-- VENDA -->
+
+<div class="card">
+
+<div class="field">
+
+<label>👤 Cliente</label>
+
+<input
+id="cliente"
+placeholder="Nome do cliente">
+
+</div>
+
+
+<div class="field">
+
+<label>📝 Descrição</label>
+
+<textarea
+id="descricao"
+placeholder="Descrição da venda"></textarea>
+
+</div>
+
+
+<div
+id="products"
+class="products hidden">
+
+<b>🛒 Produtos</b>
+
+<div id="productList"></div>
+
+</div>
+
+
+<div class="field">
+
+<label>💰 Valor</label>
+
+<input
+id="valor"
+type="number"
+step="0.01"
+placeholder="0,00"
+oninput="atualizarTotal()">
+
+</div>
+
+
+<div class="total">
+
+<small>TOTAL</small>
+
+<strong id="total">
+R$ 0,00
+</strong>
+
+</div>
+
+
+<button
+id="saveBtn"
+class="btn save"
+onclick="salvarVenda()">
+
+💳 SALVAR E GERAR PIX
+
+</button>
+
+
+<button
+class="btn secondary"
+onclick="novaVenda()">
+
+🔄 Nova venda
+
+</button>
+
+</div>
+
+
+<!-- PIX -->
+
+<div
+id="pixArea"
+class="card pix">
+
+<h2 style="text-align:center">
+
+💚 PIX GERADO
+
+</h2>
+
+
+<div class="qr">
+
+<img
+id="qrCode"
+alt="QR Code Pix">
+
+</div>
+
+
+<div
+id="paymentStatus"
+class="status">
+
+⏳ Aguardando pagamento...
+
+</div>
+
+
+<textarea
+id="pixCode"
+class="pixCode"
+readonly></textarea>
+
+
+<button
+class="btn secondary"
+onclick="copiarPix()">
+
+📋 COPIAR PIX
+
+</button>
+
+
+<button
+id="cancelBtn"
+class="btn cancel"
+onclick="cancelarVenda()">
+
+❌ CANCELAR VENDA
+
+</button>
+
+</div>
+
+</div>
+
+
+<script>
+
+/*
+==================================================
+CONFIGURAÇÃO
+==================================================
+
+COLOQUE A URL DO SEU WEB APP DO GOOGLE APPS SCRIPT.
+
+Exemplo:
+
+https://script.google.com/macros/s/SEU_ID/exec
+*/
+
+const API_URL =
+"https://script.google.com/macros/s/COLOQUE_SEU_ID_AQUI/exec";
+
+
+let reconhecimento = null;
+
+let gravando = false;
+
+let pixAtual = null;
+
+let timerPagamento = null;
+
+
+/*
+==================================================
+API
+==================================================
+*/
+
+async function api(action, dados = {}) {
+
+  const params = new URLSearchParams();
+
+  params.append("action", action);
+
+  Object.keys(dados).forEach(key => {
+
+    params.append(
+      key,
+      typeof dados[key] === "object"
+        ? JSON.stringify(dados[key])
+        : dados[key]
+    );
+
+  });
+
+
+  const response =
+    await fetch(
+      API_URL + "?" + params.toString()
+    );
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      "Erro na comunicação com o servidor."
+    );
+
+  }
+
+
+  return await response.json();
+
+}
+
+
+/*
+==================================================
+VOZ
+==================================================
+*/
+
+function iniciarVoz(){
+
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+
+  if(!SpeechRecognition){
+
+    alert(
+      "Seu navegador não suporta reconhecimento de voz. " +
+      "Use Google Chrome."
+    );
+
+    return;
+
+  }
+
+
+  if(gravando){
+
+    reconhecimento.stop();
+
+    return;
+
+  }
+
+
+  reconhecimento =
+    new SpeechRecognition();
+
+
+  reconhecimento.lang =
+    "pt-BR";
+
+
+  reconhecimento.continuous =
+    false;
+
+
+  reconhecimento.interimResults =
+    true;
+
+
+  reconhecimento.onstart = function(){
+
+    gravando = true;
+
+
+    document
+      .getElementById("voiceBtn")
+      .classList.add("recording");
+
+
+    document
+      .getElementById("voiceBtn")
+      .textContent = "⏹️";
+
+
+    document
+      .getElementById("voiceStatus")
+      .textContent =
+      "🔴 Ouvindo...";
+
+  };
+
+
+  reconhecimento.onresult =
+  function(event){
+
+    let texto = "";
+
+
+    for(
+      let i = event.resultIndex;
+      i < event.results.length;
+      i++
+    ){
+
+      texto +=
+        event.results[i][0].transcript;
+
+    }
+
+
+    document
+      .getElementById("transcript")
+      .textContent = texto;
+
+
+    if(
+      event.results[
+        event.results.length - 1
+      ].isFinal
+    ){
+
+      interpretarIA(texto);
+
+    }
+
+  };
+
+
+  reconhecimento.onerror =
+  function(){
+
+    finalizarVoz();
+
+    alert(
+      "Não consegui reconhecer sua voz."
+    );
+
+  };
+
+
+  reconhecimento.onend =
+  function(){
+
+    finalizarVoz();
+
+  };
+
+
+  reconhecimento.start();
+
+}
+
+
+/*
+==================================================
+FINALIZAR VOZ
+==================================================
+*/
+
+function finalizarVoz(){
+
+  gravando = false;
+
+
+  document
+    .getElementById("voiceBtn")
+    .classList.remove("recording");
+
+
+  document
+    .getElementById("voiceBtn")
+    .textContent = "🎤";
+
+
+  document
+    .getElementById("voiceStatus")
+    .textContent =
+    "Processando...";
+
+}
+
+
+/*
+==================================================
+GEMINI
+==================================================
+*/
+
+async function interpretarIA(texto){
+
+  try{
+
+    const resultado =
+      await api(
+        "interpretarVenda",
+        {
+          texto: texto
+        }
+      );
+
+
+    if(resultado.erro){
+
+      alert(
+        resultado.mensagem ||
+        "Não consegui identificar a venda."
+      );
+
+      return;
+
+    }
+
+
+    document
+      .getElementById("cliente")
+      .value =
+      resultado.cliente || "";
+
+
+    document
+      .getElementById("descricao")
+      .value =
+      resultado.descricao || "";
+
+
+    document
+      .getElementById("valor")
+      .value =
+      resultado.valor || "";
+
+
+    atualizarTotal();
+
+
+    mostrarProdutos(
+      resultado.produtos || []
+    );
+
+
+    document
+      .getElementById("voiceStatus")
+      .textContent =
+      "✅ Venda reconhecida!";
+
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "Erro ao interpretar venda:\n" +
+      error.message
+    );
+
+  }
+
+}
+
+
+/*
+==================================================
+PRODUTOS
+==================================================
+*/
+
+function mostrarProdutos(produtos){
+
+  const area =
+    document.getElementById("products");
+
+
+  const lista =
+    document.getElementById("productList");
+
+
+  lista.innerHTML = "";
+
+
+  if(!produtos.length){
+
+    area.classList.add("hidden");
+
+    return;
+
+  }
+
+
+  area.classList.remove("hidden");
+
+
+  produtos.forEach(produto => {
+
+    const div =
+      document.createElement("div");
+
+
+    div.className =
+      "product";
+
+
+    const quantidade =
+      produto.quantidade || 1;
+
+
+    const valor =
+      Number(
+        produto.valorTotal || 0
+      );
+
+
+    div.textContent =
+      `${quantidade}x ${produto.nome} - ` +
+      `R$ ${valor.toFixed(2).replace(".", ",")}`;
+
+
+    lista.appendChild(div);
+
+  });
+
+}
+
+
+/*
+==================================================
+TOTAL
+==================================================
+*/
+
+function atualizarTotal(){
+
+  const valor =
+    Number(
+      document
+        .getElementById("valor")
+        .value || 0
+    );
+
+
+  document
+    .getElementById("total")
+    .textContent =
+    "R$ " +
+    valor
+      .toFixed(2)
+      .replace(".", ",");
+
+}
+
+
+/*
+==================================================
+SALVAR VENDA
+==================================================
+*/
+
+async function salvarVenda(){
+
+  const cliente =
+    document
+      .getElementById("cliente")
+      .value
+      .trim();
+
+
+  const descricao =
+    document
+      .getElementById("descricao")
+      .value
+      .trim();
+
+
+  const valor =
+    Number(
+      document
+        .getElementById("valor")
+        .value
+    );
+
+
+  if(!descricao){
+
+    alert(
+      "Informe a descrição da venda."
+    );
+
+    return;
+
+  }
+
+
+  if(!valor || valor <= 0){
+
+    alert(
+      "Informe um valor válido."
+    );
+
+    return;
+
+  }
+
+
+  const btn =
+    document.getElementById("saveBtn");
+
+
+  btn.disabled = true;
+
+  btn.textContent =
+    "⏳ SALVANDO...";
+
+
+  try{
+
+    const resultado =
+      await api(
+        "registrarVenda",
+        {
+          cliente:
+            cliente ||
+            "Cliente não informado",
+
+          descricao:
+            descricao,
+
+          valor:
+            valor
+        }
+      );
+
+
+    if(!resultado.success){
+
+      throw new Error(
+        resultado.erro ||
+        "Não foi possível salvar."
+      );
+
+    }
+
+
+    pixAtual =
+      resultado.pixCode;
+
+
+    mostrarPix(
+      resultado
+    );
+
+
+  }catch(error){
+
+    alert(
+      "Erro:\n" +
+      error.message
+    );
+
+  }
+
+
+  btn.disabled = false;
+
+  btn.textContent =
+    "💳 SALVAR E GERAR PIX";
+
+}
+
+
+/*
+==================================================
+MOSTRAR PIX
+==================================================
+*/
+
+function mostrarPix(resultado){
+
+  document
+    .getElementById("pixArea")
+    .style.display =
+    "block";
+
+
+  document
+    .getElementById("pixCode")
+    .value =
+    resultado.pixCode;
+
+
+  const qr =
+    "https://quickchart.io/qr?size=300&text=" +
+    encodeURIComponent(
+      resultado.pixCode
+    );
+
+
+  document
+    .getElementById("qrCode")
+    .src = qr;
+
+
+  document
+    .getElementById("paymentStatus")
+    .className =
+    "status";
+
+
+  document
+    .getElementById("paymentStatus")
+    .textContent =
+    "⏳ Aguardando pagamento...";
+
+
+  document
+    .getElementById("pixArea")
+    .scrollIntoView({
+      behavior:"smooth"
+    });
+
+
+  iniciarMonitoramento();
+
+}
+
+
+/*
+==================================================
+COPIAR PIX
+==================================================
+*/
+
+async function copiarPix(){
+
+  const codigo =
+    document
+      .getElementById("pixCode")
+      .value;
+
+
+  try{
+
+    await navigator.clipboard.writeText(
+      codigo
+    );
+
+
+    alert(
+      "✅ Pix copiado!"
+    );
+
+
+  }catch(e){
+
+    const campo =
+      document.getElementById("pixCode");
+
+
+    campo.select();
+
+
+    document.execCommand("copy");
+
+
+    alert(
+      "✅ Pix copiado!"
+    );
+
+  }
+
+}
+
+
+/*
+==================================================
+MONITORAR PAGAMENTO
+==================================================
+*/
+
+function iniciarMonitoramento(){
+
+  if(timerPagamento){
+
+    clearInterval(
+      timerPagamento
+    );
+
+  }
+
+
+  verificarPagamento();
+
+
+  timerPagamento =
+    setInterval(
+      verificarPagamento,
+      5000
+    );
+
+}
+
+
+async function verificarPagamento(){
+
+  if(!pixAtual){
+    return;
+  }
+
+
+  try{
+
+    const resultado =
+      await api(
+        "verificarPagamento",
+        {
+          pixCode:
+            pixAtual
+        }
+      );
+
+
+    if(
+      resultado &&
+      resultado.confirmado
+    ){
+
+      clearInterval(
+        timerPagamento
+      );
+
+
+      const status =
+        document.getElementById(
+          "paymentStatus"
+        );
+
+
+      status.className =
+        "status paid";
+
+
+      status.textContent =
+        "✅ PAGAMENTO CONFIRMADO!";
+
+
+      document
+        .getElementById(
+          "cancelBtn"
+        )
+        .classList.add(
+          "hidden"
+        );
+
+    }
+
+  }catch(error){
+
+    console.log(
+      "Pagamento:",
+      error
+    );
+
+  }
+
+}
+
+
+/*
+==================================================
+CANCELAR
+==================================================
+*/
+
+async function cancelarVenda(){
+
+  if(!pixAtual){
+    return;
+  }
+
+
+  if(
+    !confirm(
+      "Deseja cancelar esta venda?"
+    )
+  ){
+    return;
+  }
+
+
+  try{
+
+    const resultado =
+      await api(
+        "cancelarVenda",
+        {
+          pixCode:
+            pixAtual
+        }
+      );
+
+
+    if(!resultado.success){
+
+      throw new Error(
+        resultado.mensagem ||
+        "Erro ao cancelar."
+      );
+
+    }
+
+
+    clearInterval(
+      timerPagamento
+    );
+
+
+    document
+      .getElementById(
+        "paymentStatus"
+      )
+      .textContent =
+      "❌ VENDA CANCELADA";
+
+
+    document
+      .getElementById(
+        "cancelBtn"
+      )
+      .classList.add(
+        "hidden"
+      );
+
+
+  }catch(error){
+
+    alert(
+      error.message
+    );
+
+  }
+
+}
+
+
+/*
+==================================================
+NOVA VENDA
+==================================================
+*/
+
+function novaVenda(){
+
+  if(timerPagamento){
+
+    clearInterval(
+      timerPagamento
+    );
+
+  }
+
+
+  pixAtual = null;
+
+
+  document
+    .getElementById("cliente")
+    .value = "";
+
+
+  document
+    .getElementById("descricao")
+    .value = "";
+
+
+  document
+    .getElementById("valor")
+    .value = "";
+
+
+  document
+    .getElementById("transcript")
+    .textContent =
+    "Sua fala aparecerá aqui.";
+
+
+  document
+    .getElementById("voiceStatus")
+    .textContent =
+    "Toque para falar";
+
+
+  document
+    .getElementById("products")
+    .classList.add(
+      "hidden"
+    );
+
+
+  document
+    .getElementById("pixArea")
+    .style.display =
+    "none";
+
+
+  document
+    .getElementById("cancelBtn")
+    .classList.remove(
+      "hidden"
+    );
+
+
+  atualizarTotal();
+
+}
+
+</script>
+
+</body>
+
+</html>
