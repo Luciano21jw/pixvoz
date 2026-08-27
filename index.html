@@ -168,6 +168,24 @@ textarea {
   min-height: 24px;
 }
 
+.voice-timer {
+
+  margin-top: 8px;
+
+  font-size: 22px;
+
+  font-weight: bold;
+
+  min-height: 28px;
+
+}
+
+.voice-timer.recording {
+
+  color: #d62828;
+
+}
+
 .transcricao {
 
   background: #f0f2f4;
@@ -434,6 +452,10 @@ Registre sua venda falando
 Clique no microfone e fale a venda
 </div>
 
+<div id="voiceTimer" class="voice-timer">
+01:00
+</div>
+
 <div
   id="transcript"
   class="transcricao"
@@ -586,7 +608,7 @@ Exemplo:
  *******************************************************/
 
 const API_URL =
-  'https://script.google.com/macros/s/AKfycbx2dFbOlXrbvnEkXcl_d_LB8Ga_VEAI35V0-7EeaASc5ngF-sOU-9xdJrUNK7YeN5u1oQ/exec';
+  'https://script.google.com/macros/s/AKfycbz4eBNi9KD15hegoD7ilbNfOYFTylXDw4mCAj5ily5X8pIak8v4RUtKYvWL8wadquRThw/exec';
 
 const TEMPO_MONITORAMENTO_MS = 5 * 60 * 1000;
 const INTERVALO_MONITORAMENTO_MS = 10 * 1000;
@@ -598,13 +620,24 @@ let timerVerificacao = null;
 
 /*******************************************************
  * VOZ
+ *
+ * ATÉ 60 SEGUNDOS DE FALA.
+ *
+ * O reconhecimento pode ser encerrado pelo navegador antes
+ * dos 60 segundos. Enquanto ainda houver tempo, a sessão é
+ * reiniciada automaticamente e o texto já reconhecido é
+ * preservado.
  *******************************************************/
 
+const TEMPO_MAXIMO_VOZ_MS = 60 * 1000;
+
 let reconhecimento = null;
-
 let gravando = false;
-
 let textoReconhecido = '';
+let textoFinalVoz = '';
+let inicioVoz = 0;
+let timerVoz = null;
+let encerramentoVozSolicitado = false;
 
 
 const voiceBtn =
@@ -615,6 +648,11 @@ const voiceBtn =
 const voiceStatus =
   document.getElementById(
     'voiceStatus'
+  );
+
+const voiceTimer =
+  document.getElementById(
+    'voiceTimer'
   );
 
 const transcript =
@@ -643,9 +681,19 @@ function iniciarVoz() {
 
   if (gravando) {
 
+    /*
+     * Segundo clique = encerra a fala imediatamente.
+     */
+
+    encerramentoVozSolicitado = true;
+
     if (reconhecimento) {
 
-      reconhecimento.stop();
+      try {
+        reconhecimento.stop();
+      } catch (erro) {
+        console.error(erro);
+      }
 
     }
 
@@ -654,7 +702,69 @@ function iniciarVoz() {
   }
 
 
+  pararTimerVoz();
+
   textoReconhecido = '';
+  textoFinalVoz = '';
+  inicioVoz = Date.now();
+  encerramentoVozSolicitado = false;
+
+  transcript.textContent =
+    'Estou ouvindo...';
+
+  atualizarTimerVoz();
+
+  iniciarSessaoVoz(
+    SpeechRecognition
+  );
+
+
+  timerVoz = setInterval(
+    function() {
+
+      atualizarTimerVoz();
+
+      if (
+        Date.now() - inicioVoz >=
+        TEMPO_MAXIMO_VOZ_MS
+      ) {
+
+        encerrarVozPorTempo();
+
+      }
+
+    },
+    250
+  );
+
+}
+
+
+function iniciarSessaoVoz(
+  SpeechRecognition
+) {
+
+  if (
+    encerramentoVozSolicitado ||
+    !inicioVoz
+  ) {
+    return;
+  }
+
+
+  const tempoDecorrido =
+    Date.now() - inicioVoz;
+
+
+  if (
+    tempoDecorrido >=
+    TEMPO_MAXIMO_VOZ_MS
+  ) {
+
+    encerrarVozPorTempo();
+    return;
+
+  }
 
 
   reconhecimento =
@@ -666,7 +776,7 @@ function iniciarVoz() {
 
 
   reconhecimento.continuous =
-    false;
+    true;
 
 
   reconhecimento.interimResults =
@@ -692,8 +802,9 @@ function iniciarVoz() {
       voiceStatus.textContent =
         '🔴 Ouvindo... fale a venda';
 
-      transcript.textContent =
-        'Estou ouvindo...';
+      voiceTimer.classList.add(
+        'recording'
+      );
 
       esconderErro();
 
@@ -703,8 +814,7 @@ function iniciarVoz() {
   reconhecimento.onresult =
     function(event) {
 
-      let texto =
-        '';
+      let textoInterino = '';
 
 
       for (
@@ -713,24 +823,60 @@ function iniciarVoz() {
         i++
       ) {
 
-        texto +=
+        const texto =
           event.results[i][0]
-            .transcript;
+            .transcript
+            .trim();
+
+
+        if (!texto) {
+          continue;
+        }
+
+
+        if (
+          event.results[i].isFinal
+        ) {
+
+          textoFinalVoz +=
+            (
+              textoFinalVoz
+                ? ' '
+                : ''
+            ) + texto;
+
+        } else {
+
+          textoInterino +=
+            (
+              textoInterino
+                ? ' '
+                : ''
+            ) + texto;
+
+        }
 
       }
 
 
-      texto =
-        texto.trim();
+      textoFinalVoz =
+        textoFinalVoz.trim();
+
+      textoReconhecido =
+        (
+          textoFinalVoz +
+          (
+            textoInterino
+              ? ' ' + textoInterino
+              : ''
+          )
+        ).trim();
 
 
-      if (texto) {
+      if (textoReconhecido) {
 
         transcript.textContent =
-          texto;
-
-        textoReconhecido =
-          texto;
+          textoReconhecido;
 
       }
 
@@ -746,13 +892,13 @@ function iniciarVoz() {
       );
 
 
-      finalizarVoz();
-
-
       if (
         event.error ===
         'not-allowed'
       ) {
+
+        encerramentoVozSolicitado = true;
+        finalizarVoz();
 
         mostrarErro(
           '🚫 Permita o acesso ao microfone no navegador.'
@@ -765,22 +911,11 @@ function iniciarVoz() {
 
       if (
         event.error ===
-        'no-speech'
-      ) {
-
-        mostrarErro(
-          '🎤 Não detectei sua fala. Clique novamente e fale a venda.'
-        );
-
-        return;
-
-      }
-
-
-      if (
-        event.error ===
         'audio-capture'
       ) {
+
+        encerramentoVozSolicitado = true;
+        finalizarVoz();
 
         mostrarErro(
           '🎤 Não consegui acessar o microfone.'
@@ -790,6 +925,34 @@ function iniciarVoz() {
 
       }
 
+
+      if (
+        event.error ===
+        'no-speech'
+      ) {
+
+        /*
+         * Não interrompe a janela de 60 segundos.
+         * O onend reinicia a sessão se necessário.
+         */
+
+        return;
+
+      }
+
+
+      if (
+        event.error ===
+        'aborted'
+      ) {
+
+        return;
+
+      }
+
+
+      encerramentoVozSolicitado = true;
+      finalizarVoz();
 
       mostrarErro(
         'Erro no reconhecimento de voz: ' +
@@ -802,20 +965,56 @@ function iniciarVoz() {
   reconhecimento.onend =
     function() {
 
+      const tempoDecorrido =
+        Date.now() - inicioVoz;
+
+
+      if (
+        !encerramentoVozSolicitado &&
+        tempoDecorrido <
+          TEMPO_MAXIMO_VOZ_MS
+      ) {
+
+        /*
+         * O navegador encerrou a sessão antes de 60 segundos.
+         * Reinicia automaticamente e mantém o texto acumulado.
+         */
+
+        setTimeout(
+          function() {
+
+            iniciarSessaoVoz(
+              SpeechRecognition
+            );
+
+          },
+          100
+        );
+
+        return;
+
+      }
+
+
       finalizarVoz();
 
 
       /*
-       * Só envia para IA depois
-       * que o reconhecimento terminou.
+       * Só envia para a IA depois que a gravação terminou.
        */
 
       if (
-        textoReconhecido
+        textoFinalVoz.trim()
       ) {
 
         interpretarIA(
-          textoReconhecido
+          textoFinalVoz.trim()
+        );
+
+      } else {
+
+        mostrarErro(
+          '🎤 Não detectei sua fala. Clique novamente e fale a venda.'
         );
 
       }
@@ -833,11 +1032,138 @@ function iniciarVoz() {
       erro
     );
 
+    if (
+      !encerramentoVozSolicitado &&
+      Date.now() - inicioVoz <
+        TEMPO_MAXIMO_VOZ_MS
+    ) {
+
+      setTimeout(
+        function() {
+
+          iniciarSessaoVoz(
+            SpeechRecognition
+          );
+
+        },
+        150
+      );
+
+    } else {
+
+      finalizarVoz();
+
+    }
+
+  }
+
+}
+
+
+function encerrarVozPorTempo() {
+
+  if (!inicioVoz) {
+    return;
+  }
+
+
+  encerramentoVozSolicitado = true;
+
+  atualizarTimerVoz();
+  pararTimerVoz();
+
+  voiceStatus.textContent =
+    '⏱️ 1 minuto concluído. Finalizando a fala...';
+
+
+  if (reconhecimento) {
+
+    try {
+      reconhecimento.stop();
+    } catch (erro) {
+      console.error(erro);
+      finalizarVoz();
+    }
+
+  } else {
+
     finalizarVoz();
 
-    mostrarErro(
-      'Não foi possível iniciar o microfone.'
+    if (
+      textoFinalVoz.trim()
+    ) {
+
+      interpretarIA(
+        textoFinalVoz.trim()
+      );
+
+    }
+
+  }
+
+}
+
+
+function atualizarTimerVoz() {
+
+  if (
+    !voiceTimer ||
+    !inicioVoz
+  ) {
+    return;
+  }
+
+
+  const restante = Math.max(
+    0,
+    TEMPO_MAXIMO_VOZ_MS -
+      (Date.now() - inicioVoz)
+  );
+
+
+  const totalSegundos =
+    Math.ceil(
+      restante / 1000
     );
+
+
+  const minutos =
+    Math.floor(
+      totalSegundos / 60
+    );
+
+
+  const segundos =
+    totalSegundos % 60;
+
+
+  voiceTimer.textContent =
+    String(minutos).padStart(2, '0') +
+    ':' +
+    String(segundos).padStart(2, '0');
+
+
+  if (
+    totalSegundos <= 0
+  ) {
+
+    voiceTimer.textContent =
+      '00:00';
+
+  }
+
+}
+
+
+function pararTimerVoz() {
+
+  if (timerVoz) {
+
+    clearInterval(
+      timerVoz
+    );
+
+    timerVoz = null;
 
   }
 
@@ -846,15 +1172,37 @@ function iniciarVoz() {
 
 function finalizarVoz() {
 
+  pararTimerVoz();
+
   gravando =
     false;
 
-  voiceBtn.classList.remove(
-    'recording'
-  );
+  inicioVoz = 0;
 
-  voiceBtn.textContent =
-    '🎤';
+  encerramentoVozSolicitado =
+    false;
+
+  if (voiceBtn) {
+
+    voiceBtn.classList.remove(
+      'recording'
+    );
+
+    voiceBtn.textContent =
+      '🎤';
+
+  }
+
+  if (voiceTimer) {
+
+    voiceTimer.classList.remove(
+      'recording'
+    );
+
+    voiceTimer.textContent =
+      '01:00';
+
+  }
 
 }
 
@@ -1944,6 +2292,19 @@ function copiarPixAntigo(
 function limparTela() {
 
   pararMonitoramentoPagamento();
+
+  pararTimerVoz();
+  encerramentoVozSolicitado = true;
+
+  if (reconhecimento) {
+    try {
+      reconhecimento.stop();
+    } catch (erro) {
+      console.error(erro);
+    }
+  }
+
+  finalizarVoz();
   monitoramentoInicio = 0;
 
   document
