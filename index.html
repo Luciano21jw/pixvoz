@@ -470,7 +470,13 @@ Exemplo:
 <br>
 
 <b>
-"Venda para João, dois pastéis e uma Coca-Cola, total de trinta reais."
+"Feijão 5 reais"
+</b>
+
+<br>
+
+<b>
+"Arroz 8 reais"
 </b>
 
 </div>
@@ -490,51 +496,20 @@ Exemplo:
 ></div>
 
 
-<label>Cliente</label>
-
-<input
-  id="cliente"
-  type="text"
-  placeholder="Nome do cliente"
->
-
-
-<label>Descrição da venda</label>
-
-<textarea
-  id="descricao"
-  placeholder="Descrição da venda"
-></textarea>
-
-
-<div class="linha">
-
-<div>
-
-<label>Valor total</label>
+<label>Valor total acumulado</label>
 
 <input
   id="valor"
   type="text"
   inputmode="decimal"
   placeholder="0,00"
->
-
-</div>
-
-<div>
-
-<label>ID da venda</label>
-
-<input
-  id="idVenda"
-  type="text"
   readonly
 >
 
-</div>
-
-</div>
+<input
+  id="idVenda"
+  type="hidden"
+>
 
 
 <div
@@ -608,7 +583,7 @@ Exemplo:
  *******************************************************/
 
 const API_URL =
-  'https://script.google.com/macros/s/AKfycbz4eBNi9KD15hegoD7ilbNfOYFTylXDw4mCAj5ily5X8pIak8v4RUtKYvWL8wadquRThw/exec';
+  'https://script.google.com/macros/s/AKfycbzyZRQ0YUpevg8hWvFetMlOy7hNkzzlKVTqVp6YJ39LX6t7MrGf629ur98boJe6eGZtkA/exec';
 
 const TEMPO_MONITORAMENTO_MS = 5 * 60 * 1000;
 const INTERVALO_MONITORAMENTO_MS = 10 * 1000;
@@ -638,6 +613,10 @@ let textoFinalVoz = '';
 let inicioVoz = 0;
 let timerVoz = null;
 let encerramentoVozSolicitado = false;
+
+// Produtos ficam acumulados enquanto a tela não for limpa.
+let produtosAcumulados = [];
+let valorTotalAcumulado = 0;
 
 
 const voiceBtn =
@@ -1209,6 +1188,9 @@ function finalizarVoz() {
 
 /*******************************************************
  * INTERPRETAR IA
+ *
+ * A cada fala, os novos produtos são adicionados aos
+ * produtos já identificados. Cliente não é usado.
  *******************************************************/
 
 function interpretarIA(
@@ -1222,12 +1204,11 @@ function interpretarIA(
     );
 
     return;
-
   }
 
 
   voiceStatus.textContent =
-    '🤖 Analisando a venda...';
+    '🤖 Identificando produto e valor...';
 
 
   api(
@@ -1244,16 +1225,13 @@ function interpretarIA(
       );
 
 
-      if (
-        !resultado
-      ) {
+      if (!resultado) {
 
         mostrarErro(
           'O servidor não retornou resposta.'
         );
 
         return;
-
       }
 
 
@@ -1267,91 +1245,112 @@ function interpretarIA(
         );
 
         return;
-
       }
 
 
-      if (
-        resultado.erro
-      ) {
+      if (resultado.erro) {
 
         if (
-          resultado.erro ===
-          'valor_ausente'
+          resultado.erro === 'valor_ausente'
         ) {
 
           mostrarErro(
-            'Não encontrei o valor total. Fale o valor da venda.'
+            'Não encontrei o valor. Fale o produto e o valor.'
+          );
+
+        } else if (
+          resultado.erro === 'produto_ausente'
+        ) {
+
+          mostrarErro(
+            'Não consegui identificar o produto.'
           );
 
         } else {
 
           mostrarErro(
-            'Não consegui identificar a venda.'
+            'Não consegui identificar o produto.'
           );
 
         }
 
         return;
-
       }
 
 
-      /*
-       * PREENCHER CAMPOS
-       */
-
-      document
-        .getElementById(
-          'cliente'
-        )
-        .value =
-        resultado.cliente ||
-        '';
+      const novosProdutos =
+        Array.isArray(resultado.produtos)
+          ? resultado.produtos
+          : [];
 
 
-      document
-        .getElementById(
-          'descricao'
-        )
-        .value =
-        resultado.descricao ||
-        '';
+      if (novosProdutos.length === 0) {
+
+        mostrarErro(
+          'Nenhum produto foi identificado.'
+        );
+
+        return;
+      }
+
+
+      novosProdutos.forEach(
+        function(produto) {
+
+          produtosAcumulados.push({
+
+            nome:
+              produto.nome ||
+              'Produto',
+
+            quantidade:
+              Number(produto.quantidade) ||
+              1,
+
+            valorTotal:
+              Number(produto.valorTotal) ||
+              0
+
+          });
+
+        }
+      );
+
+
+      const novoValor =
+        Number(resultado.valor);
 
 
       if (
-        resultado.valor !==
-        undefined
+        !isNaN(novoValor) &&
+        novoValor > 0
       ) {
 
-        document
-          .getElementById(
-            'valor'
-          )
-          .value =
-          String(
-            resultado.valor
-          )
-          .replace(
-            '.',
-            ','
-          );
+        valorTotalAcumulado +=
+          novoValor;
 
       }
 
 
+      document
+        .getElementById('valor')
+        .value =
+          valorTotalAcumulado
+            .toFixed(2)
+            .replace('.', ',');
+
+
       mostrarProdutos(
-        resultado.produtos ||
-        []
+        produtosAcumulados
       );
 
 
       voiceStatus.textContent =
-        '✅ Venda identificada! Confira os dados.';
+        '✅ Produto adicionado! Pode falar o próximo.';
 
 
       mostrarSucesso(
-        'A venda foi identificada. Agora clique em SALVAR E GERAR PIX.'
+        'Produto adicionado. Clique novamente no microfone para adicionar outro.'
       );
 
     }
@@ -1385,7 +1384,6 @@ function mostrarProdutos(
   ) {
 
     return;
-
   }
 
 
@@ -1423,8 +1421,13 @@ function mostrarProdutos(
 
 
       const quantidade =
-        produto.quantidade ||
+        Number(produto.quantidade) ||
         1;
+
+
+      const valor =
+        Number(produto.valorTotal) ||
+        0;
 
 
       let texto =
@@ -1434,21 +1437,13 @@ function mostrarProdutos(
         nome;
 
 
-      if (
-        produto.valorTotal !==
-        undefined
-      ) {
+      if (valor > 0) {
 
         texto +=
           ' — R$ ' +
-          Number(
-            produto.valorTotal
-          )
-          .toFixed(2)
-          .replace(
-            '.',
-            ','
-          );
+          valor
+            .toFixed(2)
+            .replace('.', ',');
 
       }
 
@@ -1476,69 +1471,38 @@ function salvarVenda() {
   esconderErro();
 
 
-  const cliente =
-    document
-      .getElementById(
-        'cliente'
-      )
-      .value
-      .trim();
-
-
-  const descricao =
-    document
-      .getElementById(
-        'descricao'
-      )
-      .value
-      .trim();
-
-
   const valorTexto =
     document
-      .getElementById(
-        'valor'
-      )
+      .getElementById('valor')
       .value
       .trim();
-
-
-  if (!descricao) {
-
-    mostrarErro(
-      'Digite ou dite a descrição da venda.'
-    );
-
-    return;
-
-  }
 
 
   if (!valorTexto) {
 
     mostrarErro(
-      'Informe o valor da venda.'
+      'Nenhum valor foi identificado.'
     );
 
     return;
-
   }
 
 
-  /*
-   * Aceita:
-   * 30
-   * 30,00
-   * 30.00
-   * 1.250,50
-   */
+  if (
+    produtosAcumulados.length === 0
+  ) {
+
+    mostrarErro(
+      'Nenhum produto foi identificado.'
+    );
+
+    return;
+  }
+
 
   let valorNormalizado =
     valorTexto
-      .replace(
-        /R\$/gi,
-        ''
-      )
+      .replace(/R\$/gi, '')
       .trim();
 
 
@@ -1548,22 +1512,14 @@ function salvarVenda() {
 
     valorNormalizado =
       valorNormalizado
-        .replace(
-          /\./g,
-          ''
-        )
-        .replace(
-          ',',
-          '.'
-        );
+        .replace(/\./g, '')
+        .replace(',', '.');
 
   }
 
 
   const valor =
-    parseFloat(
-      valorNormalizado
-    );
+    parseFloat(valorNormalizado);
 
 
   if (
@@ -1576,15 +1532,29 @@ function salvarVenda() {
     );
 
     return;
-
   }
 
 
+  const descricao =
+    produtosAcumulados
+      .map(
+        function(produto) {
+
+          return (
+            produto.quantidade +
+            'x ' +
+            produto.nome
+          );
+
+        }
+      )
+      .join(', ');
+
+
   const btn =
-    document
-      .getElementById(
-        'btnSalvar'
-      );
+    document.getElementById(
+      'btnSalvar'
+    );
 
 
   btn.disabled =
@@ -1602,17 +1572,9 @@ function salvarVenda() {
   api(
     'registrarVenda',
     {
-
-      cliente:
-        cliente ||
-        'Cliente não informado',
-
-      descricao:
-        descricao,
-
-      valor:
-        valor.toFixed(2)
-
+      cliente: '',
+      descricao: descricao,
+      valor: valor.toFixed(2)
     },
 
     function(resultado) {
@@ -1631,22 +1593,18 @@ function salvarVenda() {
         '💳 SALVAR E GERAR PIX';
 
 
-      if (
-        !resultado
-      ) {
+      if (!resultado) {
 
         mostrarErro(
           'O servidor não retornou resposta.'
         );
 
         return;
-
       }
 
 
       if (
-        resultado.success !==
-        true
+        resultado.success !== true
       ) {
 
         mostrarErro(
@@ -1655,17 +1613,14 @@ function salvarVenda() {
         );
 
         return;
-
       }
 
 
       document
-        .getElementById(
-          'idVenda'
-        )
+        .getElementById('idVenda')
         .value =
-        resultado.idVenda ||
-        '';
+          resultado.idVenda ||
+          '';
 
 
       const pix =
@@ -1680,21 +1635,14 @@ function salvarVenda() {
         );
 
         return;
-
       }
 
 
       document
-        .getElementById(
-          'pixCode'
-        )
+        .getElementById('pixCode')
         .textContent =
-        pix;
+          pix;
 
-
-      /*
-       * QR CODE
-       */
 
       const qr =
         document.getElementById(
@@ -1705,47 +1653,39 @@ function salvarVenda() {
       qr.src =
         'https://api.qrserver.com/v1/create-qr-code/' +
         '?size=300x300&data=' +
-        encodeURIComponent(
-          pix
-        );
+        encodeURIComponent(pix);
 
 
       document
-        .getElementById(
-          'mensagemResultado'
-        )
+        .getElementById('mensagemResultado')
         .textContent =
-        'Venda ' +
-        resultado.idVenda +
-        ' registrada com sucesso. ' +
-        'Pix gerado no valor de R$ ' +
-        valor
-          .toFixed(2)
-          .replace(
-            '.',
-            ','
-          ) +
-        '.';
+          'Venda ' +
+          resultado.idVenda +
+          ' registrada com sucesso. ' +
+          'Pix gerado no valor de R$ ' +
+          valor
+            .toFixed(2)
+            .replace('.', ',') +
+          '.';
 
 
       document
-        .getElementById(
-          'resultado'
-        )
+        .getElementById('resultado')
         .style
         .display =
-        'block';
+          'block';
 
 
-      // Assim que o QR Code foi gerado, começa a janela de 5 minutos.
       iniciarMonitoramentoPagamento(
         resultado.idVenda,
         resultado.inicioMonitoramento
       );
 
+
       mostrarSucesso(
         '✅ Venda salva e Pix gerado!'
       );
+
 
       voiceStatus.textContent =
         '⏳ Aguardando confirmação do pagamento...';
@@ -2307,77 +2247,56 @@ function limparTela() {
   finalizarVoz();
   monitoramentoInicio = 0;
 
+
+  // Zera a venda atual e todos os produtos acumulados.
+  produtosAcumulados = [];
+  valorTotalAcumulado = 0;
+
+
   document
-    .getElementById(
-      'cliente'
-    )
+    .getElementById('valor')
     .value =
-    '';
+      '';
 
 
   document
-    .getElementById(
-      'descricao'
-    )
+    .getElementById('idVenda')
     .value =
-    '';
+      '';
 
 
   document
-    .getElementById(
-      'valor'
-    )
-    .value =
-    '';
-
-
-  document
-    .getElementById(
-      'idVenda'
-    )
-    .value =
-    '';
-
-
-  document
-    .getElementById(
-      'transcript'
-    )
+    .getElementById('transcript')
     .textContent =
-    'A fala reconhecida aparecerá aqui.';
+      'A fala reconhecida aparecerá aqui.';
 
 
   document
-    .getElementById(
-      'produtos'
-    )
+    .getElementById('produtos')
     .innerHTML =
-    '';
+      '';
 
 
   document
-    .getElementById(
-      'resultado'
-    )
+    .getElementById('resultado')
     .style
     .display =
-    'none';
+      'none';
 
 
   esconderErro();
 
 
   document
-    .getElementById(
-      'sucesso'
-    )
+    .getElementById('sucesso')
     .style
     .display =
-    'none';
+      'none';
 
 
   voiceStatus.textContent =
-    'Clique no microfone e fale a venda.';
+    'Clique no microfone e fale o produto e o valor.';
+
 }
 
 
