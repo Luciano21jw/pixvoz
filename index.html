@@ -340,6 +340,53 @@ button {
   max-width: 100%;
 }
 
+/* STATUS DO PAGAMENTO */
+
+.status-pagamento {
+  text-align: center;
+  margin-top: 18px;
+  padding: 16px 14px;
+  border-radius: 14px;
+  background: #fff8e6;
+  border: 1px solid #f0d98a;
+}
+
+.status-pagamento.confirmado {
+  background: #edf9f0;
+  border-color: #b8dfc1;
+}
+
+.status-titulo {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.status-subtitulo {
+  color: #666;
+  font-size: 14px;
+}
+
+.cronometro {
+  margin-top: 10px;
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.qr {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.qr img {
+  display: block;
+  width: 220px;
+  height: 220px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
 @media(max-width:550px) {
 
   body {
@@ -496,9 +543,13 @@ Exemplo:
   class="resultado"
 >
 
-<h2>✅ Venda salva!</h2>
-
 <div id="mensagemResultado"></div>
+
+<div id="statusPagamento" class="status-pagamento">
+  <div id="statusTitulo" class="status-titulo">⏳ AGUARDANDO CONFIRMAÇÃO</div>
+  <div id="statusSubtitulo" class="status-subtitulo">Aguardando o e-mail do Nubank.</div>
+  <div id="cronometro" class="cronometro">05:00</div>
+</div>
 
 <div class="qr">
 
@@ -535,7 +586,14 @@ Exemplo:
  *******************************************************/
 
 const API_URL =
-  'https://script.google.com/macros/s/AKfycbwdWCp2JqzNKH9k9SdWN66mNCMOZBKQ8Gfstrks5y0jKiK6bRqVaCqEmQAhxfulN7U3JA/exec';
+  'https://script.google.com/macros/s/AKfycbzlSjCEy_QCvhnA2TiP7iMbdf7_-dWXcn6CGKQybGRBhAdOfEL38Aj2Ez8F_BgVlnv9Xg/exec';
+
+const TEMPO_MONITORAMENTO_MS = 5 * 60 * 1000;
+const INTERVALO_MONITORAMENTO_MS = 10 * 1000;
+let monitoramentoAtivo = false;
+let monitoramentoInicio = 0;
+let timerCronometro = null;
+let timerVerificacao = null;
 
 
 /*******************************************************
@@ -1331,18 +1389,150 @@ function salvarVenda() {
         'block';
 
 
+      // Assim que o QR Code foi gerado, começa a janela de 5 minutos.
+      iniciarMonitoramentoPagamento(
+        resultado.idVenda,
+        resultado.inicioMonitoramento
+      );
+
       mostrarSucesso(
         '✅ Venda salva e Pix gerado!'
       );
 
-
       voiceStatus.textContent =
-        '✅ Venda salva com sucesso!';
+        '⏳ Aguardando confirmação do pagamento...';
 
     }
 
   );
 
+}
+
+
+/*******************************************************
+ * MONITORAMENTO DO E-MAIL NUBANK
+ *******************************************************/
+
+function iniciarMonitoramentoPagamento(idVenda, inicioMonitoramento) {
+  pararMonitoramentoPagamento();
+
+  if (!idVenda) {
+    return;
+  }
+
+  monitoramentoAtivo = true;
+  monitoramentoInicio = Number(inicioMonitoramento) || Date.now();
+
+  atualizarStatusPagamento('AGUARDANDO');
+  atualizarCronometro();
+
+  timerCronometro = setInterval(function() {
+    atualizarCronometro();
+  }, 1000);
+
+  verificarPagamento();
+
+  timerVerificacao = setInterval(function() {
+    verificarPagamento();
+  }, INTERVALO_MONITORAMENTO_MS);
+}
+
+function verificarPagamento() {
+  if (!monitoramentoAtivo) {
+    return;
+  }
+
+  const idVenda = document.getElementById('idVenda').value.trim();
+  const agora = Date.now();
+
+  if (!idVenda || agora >= monitoramentoInicio + TEMPO_MONITORAMENTO_MS) {
+    atualizarCronometro();
+    pararMonitoramentoPagamento();
+    return;
+  }
+
+  api(
+    'verificarPagamento',
+    {
+      idVenda: idVenda,
+      inicioMonitoramento: monitoramentoInicio
+    },
+    function(resultado) {
+      if (!monitoramentoAtivo) {
+        return;
+      }
+
+      if (resultado && resultado.confirmado === true) {
+        atualizarStatusPagamento('CONFIRMADO');
+        pararMonitoramentoPagamento();
+        return;
+      }
+
+      if (resultado && resultado.status === 'TEMPO_ESGOTADO') {
+        atualizarCronometro();
+        pararMonitoramentoPagamento();
+      }
+    }
+  );
+}
+
+function atualizarCronometro() {
+  const elemento = document.getElementById('cronometro');
+  if (!elemento || !monitoramentoInicio) {
+    return;
+  }
+
+  const restante = Math.max(
+    0,
+    monitoramentoInicio + TEMPO_MONITORAMENTO_MS - Date.now()
+  );
+
+  const totalSegundos = Math.ceil(restante / 1000);
+  const minutos = Math.floor(totalSegundos / 60);
+  const segundos = totalSegundos % 60;
+
+  elemento.textContent =
+    String(minutos).padStart(2, '0') + ':' +
+    String(segundos).padStart(2, '0');
+
+  if (totalSegundos <= 0) {
+    elemento.textContent = '00:00';
+  }
+}
+
+function atualizarStatusPagamento(status) {
+  const caixa = document.getElementById('statusPagamento');
+  const titulo = document.getElementById('statusTitulo');
+  const subtitulo = document.getElementById('statusSubtitulo');
+
+  if (!caixa || !titulo || !subtitulo) {
+    return;
+  }
+
+  if (status === 'CONFIRMADO') {
+    caixa.classList.add('confirmado');
+    titulo.textContent = '✅ CONFIRMADO';
+    subtitulo.textContent = 'Pagamento confirmado.';
+    return;
+  }
+
+  caixa.classList.remove('confirmado');
+  titulo.textContent = '⏳ AGUARDANDO CONFIRMAÇÃO';
+  subtitulo.textContent = 'Aguardando o e-mail do Nubank.';
+}
+
+function pararMonitoramentoPagamento() {
+  monitoramentoAtivo = false;
+
+  if (timerCronometro) {
+    clearInterval(timerCronometro);
+    timerCronometro = null;
+  }
+
+  if (timerVerificacao) {
+    clearInterval(timerVerificacao);
+    timerVerificacao = null;
+  }
 }
 
 
@@ -1752,6 +1942,9 @@ function copiarPixAntigo(
  *******************************************************/
 
 function limparTela() {
+
+  pararMonitoramentoPagamento();
+  monitoramentoInicio = 0;
 
   document
     .getElementById(
